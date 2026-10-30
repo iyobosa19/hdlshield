@@ -1,3 +1,256 @@
+===========================================================================================================================================================================================================
+SUMMARY EVALUATION
+===========================================================================================================================================================================================================
+Evaluate the following AI-generated HDL technical summary.
+
+==================================================
+RTL GROUND TRUTH
+==================================================
+
+{ground_truth}
+
+==================================================
+GENERATED TECHNICAL SUMMARY
+==================================================
+
+{summary}
+
+==================================================
+EVALUATION METRICS
+==================================================
+
+Evaluate the following five metrics.
+
+--------------------------------------------------
+1. FC — Functional Correctness
+--------------------------------------------------
+
+Does the summary correctly describe functionality
+actually implemented by the RTL?
+
+Return FC as a percentage from 0 to 100 where 0 = incorrect and 100 = fully correct.
+
+
+--------------------------------------------------
+2. BC — Behavioral Completeness
+--------------------------------------------------
+
+Does the summary capture the important behaviors
+implemented by the RTL?
+
+Consider:
+
+- register behavior
+- read/write behavior
+- reset behavior
+- control behavior
+- data processing
+- module interactions
+- important address mappings
+
+Return BC as a percentage from 0 to 100 where 0 = almost no important behavior and 100 = essentially complete.
+
+--------------------------------------------------
+3. UHR — Unsupported/Hallucination Rate
+--------------------------------------------------
+
+Identify factual claims in the summary that are:
+
+- unsupported by the RTL
+- assumptions not justified by the RTL
+- contradicted by the RTL
+
+Calculate:
+
+UHR =
+(number of unsupported + contradicted claims)
+/
+(total factual claims)
+
+Return UHR as a percentage from 0 to 100.
+
+IMPORTANT:
+
+Higher UHR is WORSE.
+
+For example:
+
+UHR = 0
+means no unsupported claims.
+
+UHR = 20
+means approximately 20% of factual claims
+are unsupported or contradicted.
+
+
+--------------------------------------------------
+4. DCFA — Data/Control-Flow Accuracy
+--------------------------------------------------
+
+Evaluate whether the summary correctly describes:
+
+- signal relationships
+- data movement
+- register-to-register relationships
+- module connections
+- control dependencies
+- enables
+- write enables
+- selection logic
+- reset dependencies
+- data concatenation
+
+
+Return DCFA as a percentage from 0 to 100 where 0 = incorrect and 100 = fully accurate.
+
+
+--------------------------------------------------
+5. IPA — Interface/Protocol Accuracy
+--------------------------------------------------
+
+Evaluate whether the summary correctly describes:
+
+- external ports
+- AXI/interface behavior
+- read behavior
+- write behavior
+- address handling
+- enable signals
+- write enable
+- read data
+- interface submodules
+
+Return IPA as a percentage from 0 to 100 where 0 = incorrect and 100 = fully accurate.
+
+
+==================================================
+CLAIM-LEVEL ANALYSIS
+==================================================
+
+For every important claim in the summary, classify it as:
+
+- correct
+- partially_correct
+- unsupported
+- contradicted
+
+For each incorrect/unsupported claim provide:
+
+- claim
+- reason
+- evidence
+
+Also identify:
+
+- missing important behaviors
+- data/control-flow errors
+- interface errors
+
+
+==================================================
+OUTPUT FORMAT
+==================================================
+
+Return exactly this JSON structure:
+
+{
+    "FC": {
+        "score": 0,
+        "reason": ""
+    },
+
+    "BC": {
+        "score": 0,
+        "reason": ""
+    },
+
+    "UHR": {
+        "score": 0,
+        "reason": "",
+        "total_claims": 0,
+        "unsupported_claim_count": 0,
+        "contradicted_claim_count": 0,
+        "unsupported_claims": [],
+        "contradicted_claims": []
+    },
+
+    "DCFA": {
+        "score": 0,
+        "reason": ""
+    },
+
+    "IPA": {
+        "score": 0,
+        "reason": ""
+    },
+
+    "correct_claims": [],
+
+    "partially_correct_claims": [],
+
+    "missing_behaviors": [],
+
+    "data_flow_errors": [],
+
+    "interface_errors": []
+}
+===========================================================================================================================================================================================================
+ASSET EVALUATION
+===========================================================================================================================================================================================================
+You are an expert hardware security engineer and LLM judge.
+Evaluate agent-extracted asset descriptions against the provided RTL.
+Be conservative: only award points for claims directly supported by the RTL.
+Return valid JSON according to the user prompt.
+
+RTL:
+==================================================
+{rtl}
+==================================================
+
+Agent-extracted assets and explanations:
+==================================================
+{asset_text}
+==================================================
+
+Evaluate the agent output by computing these metrics and return JSON only.
+
+Metrics to compute:
+1) Asset Description Faithfulness (0-100): how well each asset description is supported by the RTL.
+   - For each asset claim, check whether the RTL shows the described behavior or connection.
+2) Security Objective Validity (0-100): whether assigned security objectives (confidentiality, integrity, availability, authentication, isolation, etc.) are reasonable given the RTL evidence.
+   - Penalize claims that assume protection properties without evidence.
+3) Hallucination / Unsupported Claim Rate (HCR): percentage of claims that are unsupported by the RTL (0-100). Lower is better.
+   - HCR = (unsupported_claims / total_claims) * 100
+4) Asset Relevance Score (ARS, 0-100): whether identified assets are genuinely security-relevant rather than ordinary signals.
+
+Compute a FINAL_SCORE using this weighting:
+- 35% Asset Description Faithfulness
+- 25% Security Objective Validity
+- 20% Asset Relevance Score
+- 20% Hallucination penalty (use 100 - HCR so lower HCR increases final score)
+
+Round scores to integers. Also provide a short JUSTIFICATION explaining strengths and weaknesses.
+
+Return JSON in this exact format:
+{
+  "faithfulness_score": 0,
+  "security_objective_validity": 0,
+  "hcr": 0,
+  "ars": 0,
+  "final_score": 0,
+  "verdict": "",
+  "justification": {
+    "faithfulness": "",
+    "objective": "",
+    "hallucination": "",
+    "ars": ""
+  }
+}
+
+=============================================================================================================================================================================================================
+VULNERABILITY INSPECTOR AGENT
+=============================================================================================================================================================================================================
+
 You are an expert LLM judge specializing in Verilog/SystemVerilog hardware security vulnerabilities.
 
 Your task is to evaluate whether a predicted vulnerability matches a ground-truth vulnerability from the same RTL design.
